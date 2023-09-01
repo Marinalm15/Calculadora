@@ -1,124 +1,130 @@
 const previousOperationText = document.querySelector("#previous-operation");
 const currentOperationText = document.querySelector("#current-operation");
-const button = document.querySelectorAll("buttons-container");
+const buttons = document.querySelectorAll("#buttons-container button");
 
 class Calculator {
-    constructor(previousOperationText, currentOperationText) { 
-        this.previousOperationText = previousOperationText;
-        this.currentOperationText = currentOperationText;
-        this.currentOperation = "";
+  constructor(previousOperationText, currentOperationText) {
+    this.previousOperationText = previousOperationText;
+    this.currentOperationText = currentOperationText;
+    this.currentOperation = "";
+  }
+
+  addDigit(digit) {
+    console.log(digit);
+    if (digit === "." && this.currentOperationText.innerText.includes(".")) {
+      return;
     }
 
-    addDigit(digit) {
+    this.currentOperation = digit;
+    this.updateScreen();
+  }
 
-        if(digit === "." && this.currentOperationText.innerText.includes(".")) {
-            return;
-        }
-
-        this.currentOperation = digit
-        this.updateScreen()
+  processOperation(operation) {
+    if (this.currentOperationText.innerText === "" && operation !== "C") {
+      if (this.previousOperationText.innerText !== "") {
+        this.changeOperation(operation);
+      }
+      return;
     }
 
-    processOperaation(operation) {
-        if(this.currentOperationText.innerText === "" && operation !== "C") {
-            if(this.previousOperationText.innerText === "") {
-                this.changeOperation(operation);
-            }
-            return;
-        }
+    let operationValue;
+    let previous = +this.previousOperationText.innerText.split(" ")[0];
+    let current = +this.currentOperationText.innerText;
 
-        let operationValue
-        const previous = +this.previousOperationText.innerText.split("0")[0];
-        const current = +this.currentOperationText.innerText;
+    switch (operation) {
+      case "+":
+        operationValue = previous + current;
+        this.updateScreen(operationValue, operation, current, previous);
+        break;
+      case "-":
+        operationValue = previous - current;
+        this.updateScreen(operationValue, operation, current, previous);
+        break;
+      case "*":
+        operationValue = previous * current;
+        this.updateScreen(operationValue, operation, current, previous);
+        break;
+      case "/":
+        operationValue = previous / current;
+        this.updateScreen(operationValue, operation, current, previous);
+        break;
+      case "DEL":
+        this.processDelOperator();
+        break;
+      case "CE":
+        this.processClearCurrentOperator();
+        break;
+      case "C":
+        this.processClearOperator();
+        break;
+      case "=":
+        this.processEqualOperator();
+        break;
+      default:
+        return;
+    }
+  }
 
-        switch(operation) {
-            case "+":
-                operationValue = previous + current
-                this.updateScreen(operationValue, operation, current, previous);
-                break;
-            case "-":
-                operationValue = previous + current
-                this.updateScreen(operationValue, operation, current, previous);
-                break;
-            case "/":
-                operationValue = previous + current
-                this.updateScreen(operationValue, operation, current, previous);
-                break;
-            case "*":
-                operationValue = previous + current
-                this.updateScreen(operationValue, operation, current, previous);
-                break;
-            case "DEL":
-                this.processDelOperator();
-                break;
-            case "CE":
-                this.processClearCurrentOperation();
-                break;
-            case "C":
-                this.processClearOperation();
-                break;
-            case "=":
-                this.processEqualOperator();
-                break;
-            default:
-                return;
-                
-        }
+  updateScreen(
+    operationValue = null,
+    operation = null,
+    current = null,
+    previous = null
+  ) {
+    if (operationValue === null) {
+      this.currentOperationText.innerText += this.currentOperation;
+    } else {
+      if (previous === 0) {
+        operationValue = current;
+      }
+      this.previousOperationText.innerText = `${operationValue} ${operation}`;
+      this.currentOperationText.innerText = "";
+    }
+  }
 
+  changeOperation(operation) {
+    const mathOperations = ["*", "-", "+", "/"];
+
+    if (!mathOperations.includes(operation)) {
+      return;
     }
 
-    updateScreen(operationValue = null, operation = null, current = null, previous = null) {
+    this.previousOperationText.innerText =
+      this.previousOperationText.innerText.slice(0, -1) + operation;
+  }
 
-        if(operationValue === null) {
-        this.currentOperationText.innerText += this.currentOperation;
-        } else {
-            if(previous === 0) {
-                operationValue = current
-            }
+  processDelOperator() {
+    this.currentOperationText.innerText =
+      this.currentOperationText.innerText.slice(0, -1);
+  }
 
-            this.previousOperationText.innerText = `${operationValue} ${operation}`
-            this.currentOperationText.innerText = "";
-        }
-    }
+  processClearCurrentOperator() {
+    this.currentOperationText.innerText = "";
+  }
 
-    chengeOperation(operation) {
-        const mathOperations = ["*", "-", "/", "+"]
+  processClearOperator() {
+    this.currentOperationText.innerText = "";
+    this.previousOperationText.innerText = "";
+  }
 
-        if(!mathOperations.includes(operation)) {
-            return
-        }
-        this.previousOperationText.innerText = this.previousOperationText.innerText.slice(0, -1) + operation;
-    }
+  processEqualOperator() {
+    let operation = this.previousOperationText.innerText.split(" ")[1];
 
-    processDelOperator() {
-        this.currentOperationText.innerText = this.currentOperationText.innerText.slice(0, -1);
-    }
-
-    processClearCurrentOperation() {
-        this.currentOperationText.innerText = "";
-    }
-
-    processClearOperation() {
-        this.currentOperationText.innerText = "";
-        this.previousOperationText.innerText = "";
-    }
-
-    processEqualOperator() {
-        const operation = previousOperationText.innerText.split("")[1];
-        this.processOperaation(operation);
-    }
+    this.processOperation(operation);
+  }
 }
 
 const calc = new Calculator(previousOperationText, currentOperationText);
 
 buttons.forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-        const value = e.target.innerText;
+  btn.addEventListener("click", (e) => {
+    const value = e.target.innerText;
 
-        if(+value >= 0 || value === ".") {
-            calc.addDigit(value);
-        } else {
-            calc.processOperaation(value);
-        }
-    });
+    if (+value >= 0 || value === ".") {
+      console.log(value);
+      calc.addDigit(value);
+    } else {
+      calc.processOperation(value);
+    }
+  });
 });
